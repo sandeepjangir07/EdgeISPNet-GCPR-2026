@@ -1,0 +1,73 @@
+name: EdgeISPNet_phase1
+experiments_root: ./experiments
+phase: train
+gpu_ids: [0]
+seed: 10
+
+resume:
+  path: null
+  load_optimizer: false
+
+datasets:
+  scale: 2
+  rgb_crop_size: 512
+  output_bit_depth: 8
+  tile_size: 512
+  border_padding: 50
+  border_padding_type: reflect
+
+  train:
+    dataroot_RAW: EdgeISPNet/Dataset/Train/IIQ
+    dataroot_RGB: EdgeISPNet/Dataset/Train/RGB
+    preprocessed_dir: null
+    crops_per_image: 64
+    batch_size: 4
+    num_workers: 4
+
+  val:
+    dataroot_RAW: EdgeISPNet/Dataset/Val/IIQ
+    dataroot_RGB: EdgeISPNet/Dataset/Val/RGB
+    preprocessed_dir: null
+    crops_per_image: 8
+    batch_size: 8
+    num_workers: 2
+
+  test:
+    dataroot_RAW: EdgeISPNet/Dataset/Test
+    preprocessed_dir: null
+    cache_images: true
+    batch_size: 1
+    num_workers: 1
+
+network:
+  in_channel: 4
+  out_channel: 3
+  inter_channel: 8
+  block_nums: 4
+  blocks_per_group: 3
+  act_type: gelu
+  with_idt: true
+  use_gsrm: true
+
+# Dry-run values
+train:
+  n_iter: 2000
+  lr: !!float 2e-4
+  lr_steps: [250000, 350000, 400000, 450000]
+  lr_gamma: 0.5
+  print_freq: 20
+  val_freq: 200
+  save_freq: 200
+  val_save_images: 8
+
+  loss_weights:
+    charbonnier: 1.0
+    ms_ssim: 0.0
+    perceptual: 0.0
+    adversarial: 0.0
+
+  gan:
+    enabled: false
+    type: lsgan
+    lr: !!float 2e-4
+    num_feat: 32

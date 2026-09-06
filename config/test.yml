@@ -1,0 +1,32 @@
+name: EdgeISPNet_test
+experiments_root: ./experiments
+phase: test
+gpu_ids: [0]
+seed: 10
+
+resume:
+  path: ./experiments/EdgeISPNet_phase2/best/edgeispnet_step400000.pth
+
+datasets:
+  scale: 2
+  output_bit_depth: 8
+  tile_size: 512
+  border_padding: 50
+  border_padding_type: reflect
+
+  test:
+    dataroot_RAW: EdgeISPNet/Dataset/Test/
+    preprocessed_dir: null
+    cache_images: true
+    batch_size: 1
+    num_workers: 1
+
+network:
+  in_channel: 4
+  out_channel: 3
+  inter_channel: 8
+  block_nums: 4
+  blocks_per_group: 3
+  act_type: gelu
+  with_idt: true
+  use_gsrm: true

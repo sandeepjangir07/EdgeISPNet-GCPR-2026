@@ -1,0 +1,7 @@
+torch>=2.0
+torchvision>=0.15
+numpy>=1.23
+rawpy>=0.18
+tifffile>=2023.1
+PyYAML>=6.0
+tqdm>=4.64
