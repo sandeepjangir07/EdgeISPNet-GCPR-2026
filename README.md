@@ -22,22 +22,6 @@ cd EdgeISPNet-GCPR-2026
 pip install -r requirements.txt
 ```
 
-Verify the network and the re-parameterisation:
-
-```bash
-python scripts/count_params.py
-```
-
-```
-train          73,578
-deploy_core    11,027
-gsrm           17,380
-deploy_total   28,407
-reparam max abs error 5.960e-08
-```
-
----
-
 ## Data layout
 
 You provide two directories per split: one of Bayer RAW files, one of RGB reference
