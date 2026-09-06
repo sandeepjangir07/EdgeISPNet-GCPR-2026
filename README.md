@@ -59,13 +59,7 @@ python scripts/preprocess.py --dataroot_RAW dataset/val/raw   --output cache/val
 
 Then set `preprocessed_dir: cache/train` in the config. Arrays are memory-mapped, so
 they are not all resident in RAM. `--dtype float16` (default) halves the cache size;
-the quantisation error is ~2.4e-4, far below sensor noise. Use `--dtype float32` for
-an exact cache.
-
-> **Memory warning.** Without `preprocessed_dir`, every image is decoded and held in
-> RAM. One 150 MP image packs to `4 x 5326 x 7102` float32 = **~600 MB**. 100 training
-> images is ~60 GB. Use `preprocessed_dir`, reduce the number of images, or provide the
-> RAM.
+Use `--dtype float32` for an exact cache.
 
 ---
 
@@ -116,54 +110,7 @@ tile of that image.
 ### Tiling and `border_padding`
 
 Each tile is read with a `border_padding` ring of surrounding context, which is trimmed
-after the forward pass. The receptive field of the default configuration is exactly
-**16 packed-RAW pixels**, measured empirically:
-
-| `border_padding` | max abs error vs whole-image inference |
-| ---------------- | -------------------------------------- |
-| 0                | 3.9e-02                                |
-| 8                | 1.2e-07                                |
-| 15               | 6.0e-08                                |
-| **16**           | **0.0 (bit-exact)**                    |
-
-The configs ship `border_padding: 50` for margin. Setting it to 16 is still bit-exact
-and processes ~27% fewer pixels per 512 tile. If you change `block_nums` or
-`blocks_per_group`, re-measure — the receptive field grows with depth.
-
----
-
-## Configuration reference
-
-| Key | Meaning |
-| --- | --- |
-| `datasets.scale` | RAW-to-RGB upsampling factor (2: packed RAW is half resolution) |
-| `datasets.rgb_crop_size` | Training crop size in the RGB domain; RAW crop is half this |
-| `datasets.tile_size` | Inference tile size in packed-RAW pixels |
-| `datasets.border_padding` | Context ring per tile, packed-RAW pixels |
-| `datasets.<split>.dataroot_RAW` | Directory of Bayer RAW files |
-| `datasets.<split>.dataroot_RGB` | Directory of RGB reference images |
-| `datasets.<split>.preprocessed_dir` | Optional `.npy` cache from `scripts/preprocess.py` |
-| `datasets.<split>.crops_per_image` | Crops drawn per image per epoch |
-| `network.inter_channel` | Feature width (paper: 8) |
-| `network.block_nums` | Number of ECB residual groups (paper: 4) |
-| `network.blocks_per_group` | ECB blocks per group (paper: 3) |
-| `network.use_gsrm` | `false` reproduces the no-GSRM ablation (11,027 inference params) |
-| `train.loss_weights` | Per-term weights; a weight of 0 disables that loss entirely |
-| `train.gan.enabled` | Enables the U-Net discriminator for phase 2 |
-
----
-
-## Repository layout
-
-```
-config/          training and inference YAML configs
-data/            RAW packing, paired crop dataset, tiled inference dataset
-models/          network, GSRM, discriminator, losses, train/test wrapper
-utils/           config parsing, logging, metrics, image IO
-scripts/         parameter counting, RAW preprocessing
-train.py         training entry point
-test.py          full-resolution tiled inference entry point
-```
+after the forward pass. 
 
 ---
 
